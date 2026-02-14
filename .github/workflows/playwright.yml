@@ -1,27 +1,51 @@
-name: Playwright Tests
+name: 로그인 테스트 배치 + Slack (매일 22:30)
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
+  workflow_dispatch:  # 수동 실행 버튼
+  schedule:
+    - cron: '30 13 * * *'  # UTC 13:30 = 한국시간 22:30 (UTC+9)
+
 jobs:
   test:
-    timeout-minutes: 60
+    timeout-minutes: 20
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+    
     - uses: actions/setup-node@v4
       with:
-        node-version: lts/*
-    - name: Install dependencies
-      run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
-    - name: Run Playwright tests
+        node-version: 20
+        cache: 'npm'
+    
+    - run: npm ci
+    
+    - run: npx playwright install --with-deps
+    
+    - name: Run all tests
       run: npx playwright test
-    - uses: actions/upload-artifact@v4
-      if: ${{ !cancelled() }}
+      env:
+        TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
+        TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+    
+    - name: Upload report
+      if: always()
+      uses: actions/upload-artifact@v4
       with:
-        name: playwright-report
+        name: playwright-report-${{ github.run_number }}
         path: playwright-report/
-        retention-days: 30
+        retention-days: 7
+    
+    - name: Slack Notification
+      if: always()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        fields: repo,commit,author,action,eventName,ref,took
+        si: true
+        username: "🧪 테스트봇"
+        starting-comment: "🌙 매일 밤 10:30 로그인 테스트 배치 실행됨!"
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
