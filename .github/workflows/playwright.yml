@@ -6,7 +6,7 @@ on:
     branches: [ main ]
   workflow_dispatch:
   schedule:
-    - cron: '30 13 * * *'  # 한국시간 22:30
+    - cron: '45 13 * * *'  # 한국시간 22:30
 
 jobs:
   test:
@@ -27,8 +27,8 @@ jobs:
     - name: Run Playwright tests
       run: npx playwright test --reporter=line --reporter=html
       env:
-        TEST_USERNAME: ${{ secrets.TEST_USERNAME }}
-        TEST_PASSWORD: ${{ secrets.TEST_PASSWORD }}
+        TEST_USERNAME: ${{ secrets.AI_AGENT_GENERAL_TEST_USERNAME }}
+        TEST_PASSWORD: ${{ secrets.AI_AGENT_GENERAL_TEST_PASSWORDD }}
     
     - name: Upload HTML report
       if: always()
