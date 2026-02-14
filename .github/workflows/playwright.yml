@@ -6,7 +6,7 @@ on:
     branches: [ main ]
   workflow_dispatch:
   schedule:
-    - cron: '45 13 * * *'  # 한국시간 22:30
+    - cron: '53 13 * * *'  # 한국시간 22:30
 
 jobs:
   test:
